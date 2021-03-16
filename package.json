@@ -1,0 +1,16 @@
+{
+  "name": "hydra-tray",
+  "version": "1.0.0",
+  "author": "somebeaver",
+  "private": true,
+  "scripts": {
+    "test": "tap"
+  },
+  "devDependencies": {
+    "electron": "^12.0.1",
+    "tap": "^14.11.0"
+  },
+  "dependencies": {
+    "hydra-i18n": "github:somebeaver/hydra-i18n"
+  }
+}
