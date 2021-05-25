@@ -1,7 +1,8 @@
 const path = require('path')
-const { Tray } = require('electron')
+const { Tray, Menu } = require('electron')
 const i18n = require('hydra-i18n')
 const { trayAttachedWindowFactory } = require('hydra-electron-browser-windows')
+const { items } = require('hydra-system-menus')
 
 // tray needs to be a global variable, else it gets GC'd and the icon vanishes
 let tray
@@ -33,6 +34,13 @@ exports.create = (options = {}) => {
   tray = new Tray(path.join(__dirname, 'icon', 'tray.png'))
   tray.setToolTip(i18n.string('server.app-name'))
 
+  // set the tray menu that gets shown on right click
+  tray.setContextMenu(contextMenuWhenBrowserWindowClosed())
+  
+  tray.on('right-click', () => {
+    tray.popUpContextMenu()
+  })
+
   // clicking the icon should open and close the server browser window unless
   // the callback prevents it
   tray.on('click', async (event, bounds, point) => {
@@ -57,6 +65,8 @@ exports.create = (options = {}) => {
         }
       })
 
+      tray.setContextMenu(contextMenuWhenBrowserWindowOpen())
+
       if (typeof options.afterTrayIconClick === 'function') {
         options.afterTrayIconClick(this.trayBrowserWindow)
       }
@@ -67,9 +77,36 @@ exports.create = (options = {}) => {
       this.trayBrowserWindow.close()
       this.trayBrowserWindow = null
 
+      tray.setContextMenu(contextMenuWhenBrowserWindowClosed())
+
       if (typeof options.afterTrayIconClick === 'function') {
         options.afterTrayIconClick(null)
       }
     }
   })
+}
+
+/**
+ * Returns an Electron context menu for the tray icon.
+ */
+const contextMenuWhenBrowserWindowClosed =() => {
+  let allItems = items.getItems(null, 'en')
+
+  return Menu.buildFromTemplate([
+    allItems['check-for-updates'],
+    allItems['quit'],
+  ])
+}
+
+/**
+ * Returns an Electron context menu for the tray icon.
+ */
+const contextMenuWhenBrowserWindowOpen = () => {
+  let allItems = items.getItems(this.trayBrowserWindow , 'en')
+
+  return Menu.buildFromTemplate([
+    allItems['check-for-updates'],
+    allItems['toggleDevTools'],
+    allItems['quit'],
+  ])
 }
