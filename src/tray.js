@@ -35,11 +35,13 @@ exports.create = (options = {}) => {
   tray.setToolTip(i18n.string('server.app-name'))
 
   // set the tray menu that gets shown on right click
-  tray.setContextMenu(contextMenuWhenBrowserWindowClosed())
-  
-  tray.on('right-click', () => {
-    tray.popUpContextMenu()
-  })
+  if (process.platform === 'win32') {
+    tray.setContextMenu(contextMenuWhenBrowserWindowClosed())
+    
+    tray.on('right-click', () => {
+      tray.popUpContextMenu()
+    })
+  }
 
   // clicking the icon should open and close the server browser window unless
   // the callback prevents it
@@ -65,7 +67,9 @@ exports.create = (options = {}) => {
         }
       })
 
-      tray.setContextMenu(contextMenuWhenBrowserWindowOpen())
+      if (process.platform === 'win32') {
+        tray.setContextMenu(contextMenuWhenBrowserWindowOpen())
+      }
 
       if (typeof options.afterTrayIconClick === 'function') {
         options.afterTrayIconClick(this.trayBrowserWindow)
@@ -77,7 +81,9 @@ exports.create = (options = {}) => {
       this.trayBrowserWindow.close()
       this.trayBrowserWindow = null
 
-      tray.setContextMenu(contextMenuWhenBrowserWindowClosed())
+      if (process.platform === 'win32') {
+        tray.setContextMenu(contextMenuWhenBrowserWindowClosed())
+      }
 
       if (typeof options.afterTrayIconClick === 'function') {
         options.afterTrayIconClick(null)
